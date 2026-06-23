@@ -1,35 +1,32 @@
+# context-budgeting — Keep OpenClaw context lean and recoverable
+
+> Manage your context window with a clear partition model and pre-compression checkpointing. Prevents memory loss after compaction and cuts token costs before they spike.
+
+[![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-blueviolet)](https://github.com/NachaFromMars)
+
+## Overview
+context-budgeting brings discipline to OpenClaw's context window using a four-partition model that allocates space deliberately across objective, recent history, decision logs, and background knowledge. Before the window fills, it checkpoints critical state so nothing important is lost during compaction. It integrates with heartbeats to monitor usage and trigger cleanup automatically when context crosses 80%.
+
+## Features
+- **4-partition model** — Objective 10% / Short-term History 40% / Decision Logs 20% / Background Knowledge 20%
+- **Pre-compression checkpoint** — write status, key decision, next step to `memory/hot/HOT_MEMORY.md`
+- **Checkpoint script** — `scripts/gc_and_checkpoint.sh`
+- **Heartbeat integration** — `/status` check every 30 min → if context >80%, trigger checkpoint
+
+## Usage / Quick Start
+1. Monitor via `/status` (heartbeat checks every ~30 min)
+2. When context >80%, update `memory/hot/HOT_MEMORY.md` with current status, key decision, next step
+3. Run:
+```bash
+scripts/gc_and_checkpoint.sh
+```
+
+## Trigger Keywords (OpenClaw)
+context near limit, context >80%, memory loss after compaction, reduce token costs
+
+## Related Skills
+- [core-brain-mula](https://github.com/NachaFromMars/core-brain-mula) — zero-decay neural memory backend
+- [memory-tiering](https://github.com/NachaFromMars/memory-tiering) — tiered memory management
+
 ---
-name: context-budgeting
-description: Manage and optimize OpenClaw context window usage via partitioning, pre-compression checkpointing, and information lifecycle management. Use when the session context is near its limit (>80%), when the agent experiences "memory loss" after compaction, or when aiming to reduce token costs and latency for long-running tasks.
----
-
-# Context Budgeting Skill
-
-This skill provides a systematic framework for managing the finite context window (RAM) of an OpenClaw agent.
-
-## Core Concepts
-
-### 1. Information Partitioning
-- **Objective/Goal (10%)**: Core task instructions and active constraints.
-- **Short-term History (40%)**: Recent 5-10 turns of raw dialogue.
-- **Decision Logs (20%)**: Summarized outcomes of past steps ("Tried X, failed because Y").
-- **Background/Knowledge (20%)**: High-relevance snippets from MEMORY.md.
-
-### 2. Pre-compression Checkpointing (Mandatory)
-Before any compaction (manual or automatic), the agent MUST:
-1.  **Generate Checkpoint**: Update `memory/hot/HOT_MEMORY.md` with:
-    - **Status**: Current task progress.
-    - **Key Decision**: Significant choices made.
-    - **Next Step**: Immediate action required.
-2.  **Run Automation**: Execute `scripts/gc_and_checkpoint.sh` to trigger the physical cleanup.
-
-## Automation Tool: `gc_and_checkpoint.sh`
-Located at: `skills/context-budgeting/scripts/gc_and_checkpoint.sh`
-
-**Usage**: 
-- Run this script after updating `HOT_MEMORY.md` to finalize the compaction process without restarting the session.
-
-## Integration with Heartbeat
-Heartbeat (every 30m) acts as the Garbage Collector (GC):
-1.  Check `/status`. If Context > 80%, trigger the **Checkpointing** procedure.
-2.  Clear raw data (e.g., multi-megabyte JSON outputs) once the summary is extracted.
+Part of the [NachaFromMars](https://github.com/NachaFromMars) OpenClaw skill ecosystem.
